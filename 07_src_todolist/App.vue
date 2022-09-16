@@ -32,7 +32,11 @@ export default {
   },
   data() {
     return {
-      todos: JSON.parse(localStorage.getItem("todos")) || [],
+      todos: [
+        { id: "001", title: "吃饭", done: true },
+        { id: "002", title: "睡觉", done: false },
+        { id: "003", title: "写代码", done: true },
+      ],
     };
   },
   methods: {
@@ -64,16 +68,6 @@ export default {
       this.todos = this.todos.filter((todo) => {
         return !todo.done;
       });
-    },
-  },
-  // todolist本地存储
-  watch: {
-    todos: {
-      // 点击是否完成时是在修改对象里面的内容，需要用到深度监视
-      deep: true,
-      handler(value) {
-        localStorage.setItem("todos", JSON.stringify(value));
-      },
     },
   },
 };

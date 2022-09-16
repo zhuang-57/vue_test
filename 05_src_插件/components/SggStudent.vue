@@ -1,15 +1,13 @@
 <template>
   <div class="demo">
     <h1>{{ msg }}</h1>
-    <h2 @click="showName">学生姓名：{{ name }}</h2>
+    <h2>学生姓名：{{ name }}</h2>
     <h2>学生年龄：{{ age }}</h2>
+    <input type="text" v-fbind="name" />
   </div>
 </template>
 
 <script>
-// 局部混入
-import { m, m2 } from "../mixin";
-
 export default {
   name: "SggStudent",
   data() {
@@ -19,7 +17,6 @@ export default {
       age: 18,
     };
   },
-  mixins: [m, m2],
 };
 </script>
 
