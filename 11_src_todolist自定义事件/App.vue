@@ -4,7 +4,11 @@
       <div class="todo-wrap">
         <!-- 自定义事件 -->
         <MyHeader @addTodo="addTodo" />
-        <MyList :todos="todos" />
+        <MyList
+          :todos="todos"
+          :checkTodo="checkTodo"
+          :deleteTode="deleteTode"
+        />
         <MyFooter
           :todos="todos"
           @checkAllTodo="checkAllTodo"
@@ -16,8 +20,6 @@
 </template>
 
 <script>
-// 导入订阅消息的第三方库
-import pubsub from "pubsub-js";
 // 导入组件
 import MyHeader from "./components/MyHeader.vue";
 import MyList from "./components/MyList.vue";
@@ -46,14 +48,8 @@ export default {
         if (todo.id === id) todo.done = !todo.done;
       });
     },
-    // 更新一个todo
-    updateTodo(id, title) {
-      this.todos.forEach((todo) => {
-        if (todo.id === id) todo.title = title;
-      });
-    },
-    // 删除一个todo  _为占位符的意思
-    deleteTode(_, id) {
+    // 删除一个todo
+    deleteTode(id) {
       this.todos = this.todos.filter((todo) => {
         return todo.id !== id;
       });
@@ -80,25 +76,6 @@ export default {
         localStorage.setItem("todos", JSON.stringify(value));
       },
     },
-  },
-
-  mounted() {
-    // 全局事件总线的绑定
-    this.$bus.$on("checkTodo", this.checkTodo);
-    this.$bus.$on("updateTodo", this.updateTodo);
-    // this.$bus.$on("deleteTode", this.deleteTode);
-
-    // 消息订阅的绑定
-    this.pubId = pubsub.subscribe("deleteTode", this.deleteTode);
-  },
-
-  beforeDestroy() {
-    // 全局事件总线的解绑
-    this.$bus.$off("checkTodo");
-    this.$bus.$off("updateTodo");
-    // this.$bus.$off("deleteTode");
-    // 消息订阅的解绑
-    pubsub.unsubscribe(this.pubId);
   },
 };
 </script>
@@ -134,12 +111,6 @@ body {
   background-color: #bd362f;
 }
 
-.btn-edit {
-  color: #fff;
-  background-color: rgb(63, 186, 234);
-  border: 1px solid rgb(16, 134, 181);
-  margin-right: 5px;
-}
 .btn:focus {
   outline: none;
 }
