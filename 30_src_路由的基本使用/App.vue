@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="row">
-      <MyBanner />
+      <div class="col-xs-offset-2 col-xs-8">
+        <div class="page-header"><h2>Vue Router Demo</h2></div>
+      </div>
     </div>
     <div class="row">
       <div class="col-xs-2 col-xs-offset-2">
@@ -10,10 +12,7 @@
           <!-- <a class="list-group-item active" href="./about.html">About</a>
           <a class="list-group-item" href="./home.html">Home</a> -->
           <!-- Vue中通过router-link实现router路由的切换 -->
-          <router-link
-            class="list-group-item"
-            active-class="active"
-            :to="{ name: 'guanyu' }"
+          <router-link class="list-group-item" active-class="active" to="/about"
             >About</router-link
           >
           <router-link class="list-group-item" active-class="active" to="/home"
@@ -34,10 +33,8 @@
 </template>
 
 <script>
-import MyBanner from "./components/MyBanner";
 export default {
   name: "App",
-  components: { MyBanner },
 };
 </script>
 

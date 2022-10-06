@@ -92,8 +92,8 @@
 		使用插件：Vue.use()
 
 ## scoped样式
-	作用：让样式在局部生效，防止冲突
-	写法：<style scoped>
+作用：让样式在局部生效，防止冲突
+写法：<style scoped>
 
 ## 总结TodoList案例
 1. 组件化编码流程：
@@ -145,6 +145,7 @@
 
 ## 全局事件总线(GlobalEventBus)
 1. 一种组件间通信的方式，适用于任意组件间通信
+
 2. 安装全局事件总线：
 	new Vue({
 		......
@@ -153,24 +154,32 @@
 		},
 		......
 	})
+	
 3. 使用事件总线
 	1.接受数据：A组想接收数据，则在A组件中给$bus绑定自定义事件，事件的回调留在A组件自身
+	
+	```javascript
 	methods(){
 		demo(data){......}
 	}
 	......
 	mounted(){
 		this.$bus.$on('xxxx',this.demo)
-	}
+}
+	```
+	
 	2.提供数据：this.$bus.$emit('xxxx',数据)
-4.最好在beforeDestroy钩子中，用$off去解绑当前组件所用到的事件
+	4.最好在beforeDestroy钩子中，用$off去解绑当前组件所用到的事件
 
 ## 消息订阅与发布（pubsub)
-1.	一种组件间通信的方式，适用于任意组件间通信
+1. 一种组件间通信的方式，适用于任意组件间通信
+
 2. 使用步骤：
 	1.安装pubsub:npm i pubsub-js@1.6.0
 	2.引入：import pubsub from 'pubsub-js'
 	3.接受数据：A组想接收数据，则在A组中订阅消息，订阅的回调留在A组件自身
+	
+	```javascript
 	methods(){
 		demo(data){...}
 	}
@@ -178,6 +187,8 @@
 	mounted(){
 		this.pid = pubsub.subscribe('xxx',this.demo)//订阅消息
 	}
+	```
+	
 	4.提供消息：pubsub.publish('xxx',数据)
 	5.最好在beforeDestroy钩子中，用Pubsub.unsubscribe(pid)去取消订阅。
 
@@ -192,3 +203,603 @@
 2. 图示：
 
      ![](D:\2021-2022\前端学习\Vue\transition.png)
+3. 写法：
+	1. 准备好样式：
+		元素进入的样式：
+			1.v-enter:进入的起点
+			2.v-enter-active:进入的过程
+			3.v-enter-to:进入的终点
+		元素离开的样式：
+			1.v-leave:离开的起点
+			2.v-leave-active:离开的过程
+			3.v-leave-to:离开的终点
+		
+	2. 使用<transition>包裹要过渡的元素，并配置name属性：
+		
+		```javascript
+		<transition name="hello">
+			<h1 v-show="isShow">你好呀</h1>
+		<transition> 
+		```
+		
+		
+		
+	3. 备注：若有多个元素需要过渡，则需要使用：<transition-group>,且每个元素都要指定的key值
+
+## 脚手架配置代理
+方法一： 
+	在vue.config.js中添加如下配置：
+	
+
+```javascript
+devServer: {
+        proxy: 'http://localhost:5000'
+    }
+```
+
+​	说明：
+​		1.优点：配置简单，请求资源时直接发给前端（8080）即可。
+​		2.缺点：不能配置多个代理，不能灵活的控制请求是否走代理。
+​		3.工作方式：若按照上述配置代理，当请求了前端不存在的资源时，那么该请求会转发给服务器（优先匹配前端资源）
+方法二
+​	编写vue.config.js配置具体代理规则：
+​	
+
+```javascript
+devServer: {
+        proxy: {
+            '/api1': {//匹配所有以'/api1'开头的请求路径
+                target: 'http://localhost:5000',//代理目标和基础路径
+                pathRewrite: { '^/api': '' },
+                ws: true,
+                changeOrigin: true
+            },
+            '/api2': {//匹配所有以'/api2'开头的请求路径
+                target: 'http://localhost:5001',//代理目标和基础路径
+                pathRewrite: { '^/api2': '' },
+                ws: true,
+                changeOrigin: true
+            },
+        }
+    }
+	/*
+		changeOrigin设置为true,服务器收到的请求头中的host为：localhost:5000
+		changeOrigin设置为false,服务器收到的请求头中的host为：localhost:8080
+		changeOrigin默认为true
+	*/
+```
+
+​	说明：
+​	1.优点：可以配置多个代理，且可以灵活的控制请求是否走代理
+​	2.缺点：配置略微繁琐，请求资源时必须加前缀。
+
+## 插槽
+
+1.作用：让父组件可以向子组件指定位置插入html结构，也是一种组件间通信的方式，适用于父组件 ===> 子组件。
+
+2.分类：默认插槽、具名插槽、作用域插槽。
+
+3.使用方式：
+
+​		1.默认插槽：
+
+```javascript
+父组件中：
+		<Category>
+			<div>html结构1</div>
+		</Category>
+子组件中：
+		<template>
+			<div>
+				<!--定义插槽-->
+				<slot>插槽默认内容...</slot>
+			</div>
+		<template>
+```
+
+​		2.具名插槽：
+
+```javascript
+父组件中：
+		<Category>
+			<template slot="center">
+				<div>html结构1</div>
+			<template>
+			
+            <template v-slot:footer>
+            	<div>html结构2</div>
+            </template>
+		</Category>
+子组件中：
+		 <template>
+            <div>
+            	<!--定义插槽-->
+            	<slot name="center">插槽默认内容...</slot>            					<slot name="footer">插槽默认内容...</slot>
+            </div>
+         </template>
+
+```
+
+​			3.作用域插槽
+
+1.理解：数据在组件的自身，但根据数据生成的结构需要组件的使用者来决定。（games数据在Category组件中，但使用数据所遍历出来的结构由App组件决定）
+
+2.具体编码：
+
+```javascript
+父组件中：
+		<Category>
+			<template scope="scopeData">
+				<!--生成的是ul列表-->
+				<ul>
+					<li v-for="g in scopeData.games" :key="g">{{g}}</li>
+				</ul>
+			</template>
+		</Category>
+		
+		<Category>
+			<template slot-scope="scopeData">
+				<!--生成的是h4标题-->
+					<h4 v-for="g in scopeData.games" :key="g">{{g}}</h4>
+			</template>
+		</Category>
+子组件中：
+		<template>
+              <div>
+                <slot :games="games"></slot>
+              </div>
+		</template>
+		<script>
+        	export default {
+       			name: "MyCategory",
+        		props: ["title"],
+        		data() {
+        			return {
+        				games: ["恋舞OL", "我的世界", "光遇", "王者荣耀"],
+       				};
+       		 	},
+        	};
+        </script>
+```
+
+默认：子挖坑（定义插槽），父填土（数据、结构）；
+
+具名：子挖坑（定义插槽），父填土（数据、结构），（子）再取个坑名；
+
+作用域：子挖坑（定义插槽），父填土（结构），（子）在顺便给自己加点土（数据）
+
+## Vuex
+#### 1.概念
+
+专门在Vue中实现集中式状态（数据）管理的一个Vue插件，对Vue应用中多个组件的共享状态进行集中式的管理（读/写），也是一种组件间通信的方式，且适用于任意间通信。
+
+#### 2.什么时候使用Vuex
+1.多个组件依赖于同一状态
+2.来自不同组件的行为需要变更同一状态
+
+![image-20220924105555643](C:\Users\ZhuangZzi\AppData\Roaming\Typora\typora-user-images\image-20220924105555643.png)
+
+#### 3.搭建vuex环境
+
+1.创建文件src/store/index.js
+
+```javascript
+// 该文件用于创建Vuex中最核心的store
+
+// 引入插件Vuex(实现集中式状态管理的一个插件)
+import Vue from 'vue'
+// 引入Vuex
+import Vuex from 'vuex'
+// 应用Vuex插件
+Vue.use(Vuex);
+// 准备actions——用于响应组件中的动作
+const actions = {}
+// 准备mutations——用于操作数据（state）
+const mutations = {}
+// 准备state——用于存储数据
+const state = {}
+// 创建并暴露store
+export default new Vuex.Store({
+    actions, mutations, state,
+})
+// 暴露store
+// export default store
+```
+
+2.在main.js中创建vm时传入store配置项
+
+```javascript
+// 引入store文件(这里默认打开index文件)
+import store from './store'
+// 创建vm
+new Vue({
+    el: '#app',
+    render: h => h(App),
+    store,
+})
+```
+#### 4.基本使用
+1.初始化数据，配置actions、mutations，操作文件store.js
+```
+// 引入插件Vuex(实现集中式状态管理的一个插件)
+import Vue from 'vue'
+// 引入Vuex
+import Vuex from 'vuex'
+// 应用Vuex插件
+Vue.use(Vuex);
+// 准备actions——用于响应组件中的动作
+const actions = {
+    jia(context, value) {
+	    context.commit('JIA', value);
+    },
+}
+// 准备mutations——用于操作数据（state）
+const mutations = {
+    JIA(state, value) {
+        // console.log("mutations被调用了", state, value);
+        state.sum += value;
+    },
+}
+// 准备state——用于存储数据
+const state = {
+    sum: 0,
+}
+// 创建并暴露store
+export default new Vuex.Store({
+    actions, mutations, state,
+})
+```
+2.组件中读取vuex中的数据，$store.state.sum
+3.组件中修改vuex中的数据：$store.dispatch('action中的方法名',数据)或$store.commit('mutations中的方法名',数据)
+备注：若没有网络请求或其他业务逻辑，组件中也可以越过actions，即不写dispatch，直接写commit
+
+#### 5.getters的使用
+1.概念：当state中的数据需要经过加工后再使用时，可以使用getters加工。
+2.在store.js中追加getters配置
+```
+const getters = {
+    bigSum(state) {
+        return state.sum * 10;
+    }
+}
+// 创建并暴露store
+export default new Vuex.Store({
+    ......
+	getters
+})
+```
+#### 6.四个map方法的使用
+1.mapState方法：用于帮助我们射映state中的数据为计算属性
+```
+computed:{
+	// 借助mapState生成计算属性:sum、school、subject,从state中读取数据。（对象写法）
+    ...mapState({ sum: "sum", school: "school", subject: "subject" }),
+    // 借助mapState生成计算属性:sum、school、subject,从state中读取数据。（数组写法）
+    ...mapState(["sum", "school", "subject"]),
+}
+```
+2.mapGetters方法：用于帮助我们射映getters中的数据为计算属性
+```
+computed:{
+	// 借助mapGetters生成计算属性:bigSum,从getters中读取数据。（对象写法）
+    ...mapGetters({ bigSum: "bigSum" }),
+    // 借助mapState生成计算属性:bigSum,从state中读取数据。（数组写法）
+    ...mapGetters(["bigSum"]),
+}
+```
+3.mapActions方法：用于帮助我们生成与actions对话的方法，即：包含$store.dispatch(xxx)的函数
+```
+methods:{
+	// 借助mapActions生成方法:incrementOdd、incrementWait,从actions中读取数据。（对象写法）
+    ...mapActions({ incrementOdd: "jiaOdd", incrementWait: "jiaWait" }),
+    // 借助mapActions生成方法:incrementOdd、incrementWait,从actions中读取数据。（数组写法）
+    // ...mapActions(["jiaOdd", "jiaWait"]),
+}
+```
+4.mapMutations方法：用于帮助我们生成与mutations对话的方法，即：包含$store.commit(xxx)的函数
+```
+methods:{
+	 // 借助mapMutations生成方法:increment、decrement,从mutations中读取数据。（对象写法）
+    ...mapMutations({ increment: "JIA", decrement: "JIAN" }),
+    // 借助mapMutations生成方法:increment、decrement,从mutations中读取数据。（数组写法）
+    // ...mapMutations(["JIA", "JIAN"]),
+}
+```
+备注：mapActions与mapMutations使用时，若需要传递参数需要：在模板中绑定事件时传递好参数，否则参数是事件对象。
+
+#### 7.模块化+命名空间
+1.目的：让代码更好维护，让多种数据分类更加明确
+2.修改store.js
+```
+const countAbout = {
+    namespaced: true,//开辟命名空间
+    actions: {...},
+    mutations: {...},
+    state: {sum: 0,},
+    getters: {
+        bigSum(state) {
+            return state.sum * 10;
+        }
+    },
+}
+const personAbout = {
+	 namespaced: true,//开辟命名空间
+    actions: {...},
+    mutations: {...},
+    state: {...},
+}
+const store = new Vuex.Store({
+	modules: {
+		countAbout,
+		personAbout
+	}
+})
+```
+3.开辟命名空间后，组件中读取state数据
+```
+//方式1：自己直接读取
+this.$store.state.personAbout.list
+//方式2：借助mapAtate读取
+...mapState('countAbout',['sum','school','subject'])
+```
+4.开启命名空间后，组件中读取getters数据：
+```
+//方式1：自己直接读取
+this.$store.getters['personAbout/firstPersonName']
+//方式2：借助mapGetters读取
+...mapGetters('countAbout',['bigSum'])
+```
+5.开启命名空间后，组件中调用dispatch
+```
+//方式1：自己直接读取
+this.$store.dispatch('personAbout/addPersonWang',person)
+//方式2：借助mapActions读取
+...mapActions('countAbout',{incrementOdd:'jiaOdd',incrementWait:'jiaWait'})
+```
+6.开启命名空间后，组件中调用commit
+```
+//方式1：自己直接读取
+this.$store.commit('personAbout/ADD_PERSON',person)
+//方式2：借助mapMutations读取
+...mapMutations('countAbout',{increment:'JIA',decrement:'JIAN'})
+```
+
+## 路由
+
+路由就是一组key-value的对应关系，多个路由需要经过路由器的管理
+
+为了实现SPA（单页面）应用（single page web application)的导航区和展示区来回的切换。
+
+![image-20220929083842592](C:\Users\ZhuangZzi\AppData\Roaming\Typora\typora-user-images\image-20220929083842592.png)
+
+#### vue-router
+
+vue的一个插件库，专门用来实现SPA应用
+
+#### 对于SPA应用的理解
+
+1.单页web应用
+
+2.整个页面只有一个完整的页面
+
+3.点击页面中的导航栏链接不会刷新页面，只会做页面的局部更新
+
+4.数据需要通过Ajax请求获取。
+
+#### 对路由的理解
+
+##### 1.什么是路由
+
+1.一个路由就是一组映射关系（key-value)
+
+2.key为路径，value可能是function或component
+
+##### 2.路由分类
+
+1.后端路由：
+
+​	value是function，用于处理客户端提交的请求
+
+ 	工作过程：服务器接收到一个请求时，根据请求路径找到匹配的函数来处理请求，返回响应数据
+
+2.前端路由：
+
+​	value是component，用于展示页面内容
+
+​	工作过程：当浏览器的路径改变时，对应的组件就会显示
+
+#### 3.路由的基本使用
+1.安装vue-router,命令 npm i vue-router
+2.应用插件：Vue.use(VueRouter)
+3.编写router配置项：
+```
+// 引入VueRouter
+import VueRouter from "vue-router";
+// 引入组件
+import MyAbout from "../components/MyAbout";
+import MyHome from "../components/MyHome";
+
+// 创建并暴露路由
+export default new VueRouter({
+    routes: [
+        {
+            path: '/about',
+            component: MyAbout
+        },
+        {
+            path: '/home',
+            component: MyHome
+        },
+
+    ]
+})
+```
+4.实现切换（active-class可配置高亮样式）
+<router-link active-class="active" to="about">About</router-link>
+
+5.指定展示位置
+<router-view></router-view>
+
+#### 注意点：
+1.路由组件通常放在pages文件夹，一般组件通常存放在components文件夹
+2.通过切换，“隐藏”了路由组件，默认是被销毁了，需要的时候再去挂载
+3.每个组件都有自己的$route属性，里面存储着自己的路由信息
+4.整个应用只要一个router，可以通过组件的$router属性获取到
+
+#### 4.多级路由
+1.配置路由规则，使用children配置项：
+```
+routes: [
+        {
+            path: '/about',
+            component: MyAbout
+        },
+        {
+            path: '/home',
+            component: MyHome,
+            children: [
+                {
+                    path: 'news',
+                    component: MyNews,
+                },
+                {
+                    path: 'message',
+                    component: MyMessage,
+                }
+            ]
+        },
+    ]
+```
+2.跳转（要写出完整的路径）：
+<router-link to="/home/news">News</router-link>
+
+#### 5.路由的query参数
+跳转并携带query参数，to的字符串写法
+```
+<router-link :to="/home/message/detail?id=666&title=你好>跳转<router-link>
+
+跳转并携带query参数，to的对象写法
+<router-link
+	:to="{
+		path:'/home/message/detail,
+		query:{
+			id:666,
+			title:'你好'
+		}
+	}">跳转</router-link>
+
+2.接收参数：
+$route.query.id
+$route.query.title
+```
+
+#### 6.命名路由
+1.作用：可以简化路由的跳转
+2.如何使用
+	1.给路由命名
+	```
+	 {
+            path: '/home',
+            component: MyHome,
+            children: [
+                {
+                    path: 'message',
+                    component: MyMessage,
+                    children: [
+                        {
+                            name: 'xiangqing',//给路由命名
+                            path: 'detail',
+                            component: MyDetail,
+                        }
+                    ]
+                }
+            ]
+        },
+	```
+	2.简化跳转
+	简化前需要写完整的代码
+	```
+	<router-link :to="/home/message/detail">跳转<router-link>
+	```
+	简化后直接通过名字跳转
+	```
+	<router-link :to="{name:'hello'}">跳转<router-link>
+	```
+	简化写法配合传递参数
+	<router-link
+	:to="{
+		name:'hello',
+		query:{
+			id:666,
+			title:'你好'
+		}
+	}">跳转</router-link>
+
+#### 7.路由的parmas参数
+1.配置路由，声明params参数
+```
+ {
+	path: '/home',
+	component: MyHome,
+	children: [
+		{
+			path: 'news',
+			component: MyNews,
+		},
+		{
+			path: 'message',
+			component: MyMessage,
+			children: [
+				{
+					name: 'xiangqing',
+					path: 'detail/:id/:title',//使用占位符声明接收parmas参数
+					component: MyDetail,
+				}
+			]
+		}
+	]
+},
+```
+2.传递参数
+跳转并携带params参数，to的字符串写法
+<router-link :to="/home/message/detail/66/hello">跳转<router-link>
+跳转并携带params参数，to的对象写法
+<router-link
+	:to="{
+		name:'hello',
+		params:{
+			id:666,
+			title:'你好'
+		}
+	}">跳转</router-link>
+
+3.接收参数：
+$route.params.id
+$route.params.title
+
+#### 8.路由的props配置
+作用：让路由组件更方便的收到参数
+```
+{
+	name: 'xiangqing',
+	path: 'detail',
+	component: MyDetail,
+	//第一种写法：值为对象（传递的数是死的，很少使用），该对象中的所有key-value都会以props的形式传给detail组件。
+	// props: { a: 333, b: 'hello' },
+
+	//第二种写法：值为布尔值，若布尔值为真，就会把改路由组件收到的所有params参数，以props的形式传给detail组件
+	// props: true,
+
+	//第三种写法：值为函数(回调函数),该函数返回的对象中每一组key-value都会通过props传给detail组件
+	// props($route) {
+	//     return { id: $route.query.id, title: $route.query.title };
+	// }
+	props({ query }) {
+		return { id: query.id, title: query.title };
+	}
+}
+```
+
+
+
+
