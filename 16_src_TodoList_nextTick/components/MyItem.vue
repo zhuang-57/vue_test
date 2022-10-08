@@ -70,7 +70,8 @@ export default {
       //   this.$refs.inputTitle.focus();
       // }, 200);
 
-      // 法二:nextTick()回调函数
+      // 法二:nextTick()回调函数,生命周期钩子，
+      //当修改了数据之后，Vue帮我操作完DOM之后，把真实DOM放入页面了，再来执行nextTick中的代码
       this.$nextTick(function () {
         this.$refs.inputTitle.focus();
       });

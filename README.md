@@ -800,6 +800,133 @@ $route.params.title
 }
 ```
 
+#### 9.<router-link>的replace属性
+1.作用：控制路由跳转时操作浏览器历史记录的模式
+2.浏览器的历史记录有两种写入方式：分别为push和replace,push是追加历史记录，replace是替换当前记录，路由跳转时候默认为push
+3.如何开启replace模式：
+	<router-link :replace="true" ....>News</router-link>
+	<router-link replace ....>News</router-link>
 
+#### 10.编程式路由导航
+1.作用：不借助<router-link>实现路由跳转，让路由跳转更加灵活
+2.具体编码：
+```
+this.$router.push({
+        name: "xiangqing",
+        query: {
+          id: m.id,
+          title: m.title,
+        },
+      });
 
+this.$router.replace({
+        name: "xiangqing",
+        query: {
+          id: m.id,
+          title: m.title,
+        },
+      });
 
+forward() {
+      this.$router.forward();
+    },
+    back() {
+      this.$router.back();
+    },
+    test() {
+      this.$router.go(2);
+    },
+```
+
+#### 11.缓存路由组件
+1.作用：让不展示的路由组件保存挂载，不被销毁。
+2.具体编码：
+```
+<keep-alive include="MyNews">
+	<router-view></router-view>
+</keep-alive>
+```
+当需要多个中的两个不被销毁时的具体编程：
+```
+<keep-alive :include="['MyNews','MyMessage']">
+	<router-view></router-view>
+</keep-alive>
+```
+
+#### 12.两个新的生命周期钩子
+1.作用：路由组件独有的两个钩子，用于捕获路由组件的激活状态
+2.具体名字：
+	1.activated路由组件被激活时触发
+	2.deactivated路由组件失活时触发
+
+#### 13.路由守卫
+1.作用：对路由进行权限控制
+2.分类：全局守卫、独享守卫、组件内守卫
+3.全局守卫：
+```
+// 全局前置路由守卫，在初始化时、每次路由切换之前都会调用这个函数
+router.beforeEach((to, from, next) => {
+    console.log("before", to, from);
+
+    // if (to.path === '/home/news' || to.path === '/home/message'),if (to.name === 'xinwen' || to.name === 'xiaoxi') 
+    if (to.meta.onAuth) {//判断当前路由是否需要进行权限控制
+        if (localStorage.getItem('school') === 'atguigu') {//权限控制的具体规则
+            next();
+        }
+        else alert('学校名错误，无权限查看');
+    } else {
+        next();//放行
+
+    }
+})
+
+// 全局后置路由守卫，在初始化时、每次路由切换之后都会调用这个函数
+router.afterEach((to, from) => {
+    console.log("after", to, from);
+    document.title = to.meta.title || '硅谷主页'; //修改网页的title
+})
+```
+
+4.独享路由守卫
+只有前置，没有后置，可以和其他守卫混合使用
+```
+beforeEnter(to, from, next) {
+	console.log("before", to, from);
+
+	// if (to.path === '/home/news' || to.path === '/home/message'),if (to.name === 'xinwen' || to.name === 'xiaoxi') 
+	if (to.meta.onAuth) {
+		if (localStorage.getItem('school') === 'atguigu') {
+			next();
+		}
+		else alert('学校名错误，无权限查看');
+	} else {
+		next();
+	}
+}
+```
+
+5.组件内守卫：
+```
+进入守卫：通过路由规则，进入该组件时被调用
+beforeRouterEnter(to,from,next){
+},
+离开守卫：通过路由规则，离开该组件时被调用（一定是通过路由规则）
+beforeRouterleave(to,from,next){
+},
+```
+
+#### 14.路由的两种工作模式
+1.对于一个url来说，什么是hash值？————#及其后面的内容就是hash值
+2.hash值不会包含在http请求中，即：hash值不会带给服务器
+3.hash模式：
+	1.地址中永远带着#号，不美观。
+	2.若以后将地址通过第三方手机app分享，若app校验严格，则地址会被标记为不合法
+	3.兼容性较好。
+4.history模式：
+	1.地址干净，美观。
+	2.兼容性和hash模式相比略差。
+	3.应用部署上线时需要后端人员支持，解决刷新页面服务器404的问题。
+
+## UI组件库
+
+![image-20221007182413617](C:\Users\ZhuangZzi\AppData\Roaming\Typora\typora-user-images\image-20221007182413617.png)
